@@ -1,0 +1,36 @@
+REPORTE ETL
+============================================================
+Total registros originales: 123790
+Registros válidos: 123790
+Registros rechazados totales: 0
+
+DETALLE DE RECHAZOS
+------------------------------------------------------------
+Campos obligatorios vacíos: 0
+CI inválido: 0
+Número de cuenta inválido: 0
+Saldo inválido: 0
+Banco inválido: 0
+Duplicados detectados: 0
+Inconsistencias de identidad: 0
+
+ARCHIVOS GENERADOS
+------------------------------------------------------------
+- etl/dataset_clean.csv
+- etl/rejected_records.csv
+- etl/etl_report.txt
+
+COLUMNAS DEL DATASET LIMPIO
+------------------------------------------------------------
+ci,nombre,apellido,numero_cuenta,banco_id,saldo_usd
+
+REGLAS APLICADAS
+------------------------------------------------------------
+- Se eliminó la columna Nro por no ser relevante para el dominio bancario.
+- Nombres y apellidos normalizados a mayúsculas.
+- CI válido: 5 a 8 dígitos numéricos.
+- Número de cuenta válido: 8 a 14 dígitos numéricos.
+- Saldo válido: numérico y mayor o igual a cero.
+- Banco válido: ID entre 1 y 14.
+- Duplicado lógico: banco_id + numero_cuenta.
+- Inconsistencia de identidad: mismo CI con distinto nombre o apellido.
