@@ -4,13 +4,19 @@ Total registros originales: 123790
 Registros válidos: 123790
 Registros rechazados totales: 0
 
-DETALLE DE RECHAZOS
+FILTRO 1: VALIDACIÓN OBLIGATORIA
 ------------------------------------------------------------
 Campos obligatorios vacíos: 0
-CI inválido: 0
-Número de cuenta inválido: 0
 Saldo inválido: 0
 Banco inválido: 0
+
+FILTRO 2: VALIDACIÓN DE FORMATO
+------------------------------------------------------------
+CI inválido por formato/longitud: 0
+Número de cuenta inválido por formato/longitud: 0
+
+REGLAS DE CONSISTENCIA
+------------------------------------------------------------
 Duplicados detectados: 0
 Inconsistencias de identidad: 0
 
@@ -28,9 +34,7 @@ REGLAS APLICADAS
 ------------------------------------------------------------
 - Se eliminó la columna Nro por no ser relevante para el dominio bancario.
 - Nombres y apellidos normalizados a mayúsculas.
-- CI válido: 5 a 8 dígitos numéricos.
-- Número de cuenta válido: 8 a 14 dígitos numéricos.
-- Saldo válido: numérico y mayor o igual a cero.
-- Banco válido: ID entre 1 y 14.
+- Filtro 1 elimina registros con problemas estructurales u obligatorios.
+- Filtro 2 valida formato de CI y número de cuenta con reglas ajustadas al dataset.
 - Duplicado lógico: banco_id + numero_cuenta.
 - Inconsistencia de identidad: mismo CI con distinto nombre o apellido.

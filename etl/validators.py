@@ -2,11 +2,15 @@ import re
 
 VALID_BANK_IDS = set(range(1, 15))
 
+# Reglas configurables para el filtro 2
+CI_MIN_LENGTH = 5
+CI_MAX_LENGTH = 15
+ACCOUNT_MIN_LENGTH = 6
+
 
 def normalize_text(value) -> str:
     """
     Limpia espacios al inicio/final y colapsa espacios internos.
-    Ejemplo: '  Juan   Perez  ' -> 'Juan Perez'
     """
     if value is None:
         return ""
@@ -29,10 +33,26 @@ def normalize_identity_text(value) -> str:
     return normalize_name(value)
 
 
+def clean_record(row: dict) -> dict:
+    """
+    Mapea columnas del dataset original al modelo del sistema.
+    La columna 'Nro' se ignora porque no pertenece al dominio bancario.
+    """
+    return {
+        "ci": normalize_text(row.get("Identificacion", "")),
+        "nombre": normalize_name(row.get("Nombres", "")),
+        "apellido": normalize_name(row.get("Apellidos", "")),
+        "numero_cuenta": normalize_text(row.get("NroCuenta", "")),
+        "banco_id": normalize_text(row.get("IdBanco", "")),
+        "saldo_usd": normalize_text(row.get("Saldo", "")),
+    }
+
+
+# =========================
+# FILTRO 1: OBLIGATORIO
+# =========================
+
 def validate_required_fields(record: dict) -> bool:
-    """
-    Verifica que existan todos los campos obligatorios y no estén vacíos.
-    """
     required_fields = [
         "ci",
         "nombre",
@@ -51,30 +71,7 @@ def validate_required_fields(record: dict) -> bool:
     return True
 
 
-def validate_ci(ci: str) -> bool:
-    """
-    Regla ajustada al dataset real:
-    - solo números
-    - entre 5 y 15 dígitos
-    """
-    ci = normalize_text(ci)
-    return bool(re.fullmatch(r"\d{5,15}", ci))
-
-
-def validate_account(numero_cuenta: str) -> bool:
-    """
-    Regla ajustada al dataset real:
-    - solo números
-    - mínimo 6 dígitos
-    """
-    numero_cuenta = normalize_text(numero_cuenta)
-    return bool(re.fullmatch(r"\d{6,}", numero_cuenta))
-
-
 def parse_balance(balance):
-    """
-    Convierte saldo a float si es posible.
-    """
     try:
         return float(normalize_text(balance))
     except (TypeError, ValueError):
@@ -82,17 +79,11 @@ def parse_balance(balance):
 
 
 def validate_balance(balance) -> bool:
-    """
-    El saldo debe ser numérico y mayor o igual a cero.
-    """
     value = parse_balance(balance)
     return value is not None and value >= 0
 
 
 def parse_bank_id(banco_id):
-    """
-    Convierte banco_id a int si es posible.
-    """
     try:
         return int(normalize_text(banco_id))
     except (TypeError, ValueError):
@@ -100,9 +91,6 @@ def parse_bank_id(banco_id):
 
 
 def validate_bank(banco_id) -> bool:
-    """
-    Valida que el banco esté entre 1 y 14.
-    """
     value = parse_bank_id(banco_id)
     return value in VALID_BANK_IDS if value is not None else False
 
@@ -127,16 +115,33 @@ def build_identity_key(record: dict):
     )
 
 
-def clean_record(row: dict) -> dict:
+# =========================
+# FILTRO 2: FORMATO
+# =========================
+
+def validate_ci_format(ci: str) -> bool:
     """
-    Mapea columnas del dataset original al modelo del sistema.
-    La columna 'Nro' se ignora porque no pertenece al dominio bancario.
+    Regla ajustada al dataset:
+    - solo números
+    - longitud entre CI_MIN_LENGTH y CI_MAX_LENGTH
     """
-    return {
-        "ci": normalize_text(row.get("Identificacion", "")),
-        "nombre": normalize_name(row.get("Nombres", "")),
-        "apellido": normalize_name(row.get("Apellidos", "")),
-        "numero_cuenta": normalize_text(row.get("NroCuenta", "")),
-        "banco_id": normalize_text(row.get("IdBanco", "")),
-        "saldo_usd": normalize_text(row.get("Saldo", "")),
-    }
+    ci = normalize_text(ci)
+
+    if not ci.isdigit():
+        return False
+
+    return CI_MIN_LENGTH <= len(ci) <= CI_MAX_LENGTH
+
+
+def validate_account_format(numero_cuenta: str) -> bool:
+    """
+    Regla ajustada al dataset:
+    - solo números
+    - longitud mínima ACCOUNT_MIN_LENGTH
+    """
+    numero_cuenta = normalize_text(numero_cuenta)
+
+    if not numero_cuenta.isdigit():
+        return False
+
+    return len(numero_cuenta) >= ACCOUNT_MIN_LENGTH
