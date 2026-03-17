@@ -1,0 +1,91 @@
+services:
+  postgres_banks:
+    image: postgres:16
+    container_name: postgres_banks
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_banks_data:/var/lib/postgresql/data
+      - ./init/postgres-init.sql:/docker-entrypoint-initdb.d/postgres-init.sql
+    networks:
+      - bdds_net
+
+  postgres_asfi:
+    image: postgres:16
+    container_name: postgres_asfi
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: asfi_central
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_asfi_data:/var/lib/postgresql/data
+    networks:
+      - bdds_net
+
+  mysql_banks:
+    image: mysql:8.0
+    container_name: mysql_banks
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_banks_data:/var/lib/mysql
+      - ./init/mysql-init.sql:/docker-entrypoint-initdb.d/mysql-init.sql
+    networks:
+      - bdds_net
+
+  sqlserver_banks:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver_banks
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "SqlServer123!"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_banks_data:/var/opt/mssql
+    networks:
+      - bdds_net
+
+  mongo_banks:
+    image: mongo:7
+    container_name: mongo_banks
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_banks_data:/data/db
+      - ./init/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - bdds_net
+
+  cassandra_banks:
+    image: cassandra:4.1
+    container_name: cassandra_banks
+    ports:
+      - "9042:9042"
+    volumes:
+      - cassandra_banks_data:/var/lib/cassandra
+    networks:
+      - bdds_net
+
+volumes:
+  postgres_banks_data:
+  postgres_asfi_data:
+  mysql_banks_data:
+  sqlserver_banks_data:
+  mongo_banks_data:
+  cassandra_banks_data:
+
+networks:
+  bdds_net:
+    driver: bridge
