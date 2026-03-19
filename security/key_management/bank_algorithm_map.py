@@ -1,0 +1,33 @@
+BANK_ALGORITHM_MAP = {
+    1: "CAESAR",
+    2: "ATBASH",
+    3: "VIGENERE",
+    4: "PLAYFAIR",
+    5: "HILL",
+    6: "DES",
+    7: "3DES",
+    8: "BLOWFISH",
+    9: "TWOFISH",
+    10: "AES",
+    11: "RSA",
+    12: "ELGAMAL",
+    13: "ECC",
+    14: "CHACHA20",
+}
+
+BANK_NAME_MAP = {
+    1: "Banco Union S.A.",
+    2: "Banco Mercantil Santa Cruz S.A.",
+    3: "Banco Nacional de Bolivia S.A. (BNB)",
+    4: "Banco de Credito de Bolivia S.A. (BCP)",
+    5: "Banco BISA S.A.",
+    6: "Banco Ganadero S.A.",
+    7: "Banco Economico S.A.",
+    8: "Banco Prodem S.A.",
+    9: "Banco Solidario S.A.",
+    10: "Banco Fortaleza S.A.",
+    11: "Banco FIE S.A.",
+    12: "Banco PYME de la Comunidad S.A.",
+    13: "Banco de Desarrollo Productivo S.A.M.",
+    14: "Banco de la Nacion Argentina",
+}

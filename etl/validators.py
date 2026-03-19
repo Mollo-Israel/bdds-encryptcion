@@ -36,9 +36,11 @@ def normalize_identity_text(value) -> str:
 def clean_record(row: dict) -> dict:
     """
     Mapea columnas del dataset original al modelo del sistema.
-    La columna 'Nro' se ignora porque no pertenece al dominio bancario.
+    Se reutiliza la columna 'Nro' como cuenta_id para mantener
+    un identificador técnico único por registro.
     """
     return {
+        "cuenta_id": normalize_text(row.get("Nro", "")),
         "ci": normalize_text(row.get("Identificacion", "")),
         "nombre": normalize_name(row.get("Nombres", "")),
         "apellido": normalize_name(row.get("Apellidos", "")),
@@ -54,6 +56,7 @@ def clean_record(row: dict) -> dict:
 
 def validate_required_fields(record: dict) -> bool:
     required_fields = [
+        "cuenta_id",
         "ci",
         "nombre",
         "apellido",
@@ -69,6 +72,18 @@ def validate_required_fields(record: dict) -> bool:
             return False
 
     return True
+
+
+def parse_account_id(cuenta_id):
+    try:
+        return int(normalize_text(cuenta_id))
+    except (TypeError, ValueError):
+        return None
+
+
+def validate_account_id(cuenta_id) -> bool:
+    value = parse_account_id(cuenta_id)
+    return value is not None and value > 0
 
 
 def parse_balance(balance):

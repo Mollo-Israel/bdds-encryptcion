@@ -1,0 +1,85 @@
+{
+  "1": {
+    "algorithm": "CAESAR",
+    "key_material": {
+      "shift": 3
+    }
+  },
+  "2": {
+    "algorithm": "ATBASH",
+    "key_material": {}
+  },
+  "3": {
+    "algorithm": "VIGENERE",
+    "key_material": {
+      "key": "UNIVALLE"
+    }
+  },
+  "4": {
+    "algorithm": "PLAYFAIR",
+    "key_material": {
+      "key": "SEGURIDAD"
+    }
+  },
+  "5": {
+    "algorithm": "HILL",
+    "key_material": {
+      "key_matrix": [[3, 3], [2, 5]]
+    }
+  },
+  "6": {
+    "algorithm": "DES",
+    "key_material": {
+      "key": "G4N4D3R0"
+    }
+  },
+  "7": {
+    "algorithm": "3DES",
+    "key_material": {
+      "key": "ECONOMICO123456789012345"
+    }
+  },
+  "8": {
+    "algorithm": "BLOWFISH",
+    "key_material": {
+      "key": "PRODEM_KEY_2026"
+    }
+  },
+  "9": {
+    "algorithm": "TWOFISH",
+    "key_material": {
+      "key": "SOLIDARIO_KEY_2026"
+    }
+  },
+  "10": {
+    "algorithm": "AES",
+    "key_material": {
+      "key": "FORTALEZA_AES_KEY_2026_32_BYTES!!"
+    }
+  },
+  "11": {
+    "algorithm": "RSA",
+    "key_material": {
+      "seed": "FIE_RSA_SEED_2026"
+    }
+  },
+  "12": {
+    "algorithm": "ELGAMAL",
+    "key_material": {
+      "seed": "PYME_ELGAMAL_SEED_2026"
+    }
+  },
+  "13": {
+    "algorithm": "ECC",
+    "key_material": {
+      "seed": "BDP_ECC_SEED_2026"
+    }
+  },
+"14": {
+  "algorithm": "CHACHA20",
+  "key_material": {
+    "key": "BANCO_NACION_ARG_2026_CHACHA20!!",
+    "nonce": "BNA20260"
+  }
+}
+}

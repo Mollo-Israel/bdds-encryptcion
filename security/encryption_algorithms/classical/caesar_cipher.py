@@ -4,22 +4,31 @@ from ..base_cipher import BaseCipher
 class CaesarCipher(BaseCipher):
     def __init__(self, shift: int = 3):
         self.shift = shift % 26
-
-    def _transform(self, text: str, shift: int) -> str:
-        result = []
-
-        for char in text:
-            if char.isalpha():
-                base = ord('A') if char.isupper() else ord('a')
-                new_char = chr((ord(char) - base + shift) % 26 + base)
-                result.append(new_char)
-            else:
-                result.append(char)
-
-        return ''.join(result)
+        self.digit_shift = shift % 10
 
     def encrypt(self, data: str) -> str:
-        return self._transform(data, self.shift)
+        return "".join(self._shift_char(ch, encrypt=True) for ch in str(data))
 
     def decrypt(self, data: str) -> str:
-        return self._transform(data, -self.shift)
+        return "".join(self._shift_char(ch, encrypt=False) for ch in str(data))
+
+    def _shift_char(self, ch: str, encrypt: bool) -> str:
+        if ch.islower():
+            base = ord("a")
+            offset = ord(ch) - base
+            step = self.shift if encrypt else -self.shift
+            return chr(base + ((offset + step) % 26))
+
+        if ch.isupper():
+            base = ord("A")
+            offset = ord(ch) - base
+            step = self.shift if encrypt else -self.shift
+            return chr(base + ((offset + step) % 26))
+
+        if ch.isdigit():
+            base = ord("0")
+            offset = ord(ch) - base
+            step = self.digit_shift if encrypt else -self.digit_shift
+            return chr(base + ((offset + step) % 10))
+
+        return ch

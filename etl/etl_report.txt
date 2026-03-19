@@ -7,6 +7,7 @@ Registros rechazados totales: 0
 FILTRO 1: VALIDACIÓN OBLIGATORIA
 ------------------------------------------------------------
 Campos obligatorios vacíos: 0
+cuenta_id inválido: 0
 Saldo inválido: 0
 Banco inválido: 0
 
@@ -20,6 +21,23 @@ REGLAS DE CONSISTENCIA
 Duplicados detectados: 0
 Inconsistencias de identidad: 0
 
+DISTRIBUCIÓN FINAL POR BANCO
+------------------------------------------------------------
+Banco 1: 8722 registros
+Banco 2: 8831 registros
+Banco 3: 8767 registros
+Banco 4: 8885 registros
+Banco 5: 8785 registros
+Banco 6: 8793 registros
+Banco 7: 8872 registros
+Banco 8: 8877 registros
+Banco 9: 8817 registros
+Banco 10: 8779 registros
+Banco 11: 8910 registros
+Banco 12: 8982 registros
+Banco 13: 8902 registros
+Banco 14: 8868 registros
+
 ARCHIVOS GENERADOS
 ------------------------------------------------------------
 - etl/dataset_clean.csv
@@ -28,11 +46,11 @@ ARCHIVOS GENERADOS
 
 COLUMNAS DEL DATASET LIMPIO
 ------------------------------------------------------------
-ci,nombre,apellido,numero_cuenta,banco_id,saldo_usd
+cuenta_id,ci,nombre,apellido,numero_cuenta,banco_id,saldo_usd
 
 REGLAS APLICADAS
 ------------------------------------------------------------
-- Se eliminó la columna Nro por no ser relevante para el dominio bancario.
+- Se reutiliza la columna Nro como cuenta_id para integración con los microservicios bancarios.
 - Nombres y apellidos normalizados a mayúsculas.
 - Filtro 1 elimina registros con problemas estructurales u obligatorios.
 - Filtro 2 valida formato de CI y número de cuenta con reglas ajustadas al dataset.

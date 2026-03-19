@@ -11,15 +11,20 @@ class VigenereCipher(BaseCipher):
         result = []
         key_index = 0
 
-        for char in text:
-            if char.isalpha():
-                key_char = self.key[key_index % len(self.key)]
-                shift = ord(key_char) - ord('A')
-                if not encrypt:
-                    shift = -shift
+        for char in str(text):
+            key_char = self.key[key_index % len(self.key)]
+            alpha_shift = ord(key_char) - ord('A')
+            digit_shift = alpha_shift % 10
 
+            if char.isalpha():
+                shift = alpha_shift if encrypt else -alpha_shift
                 base = ord('A') if char.isupper() else ord('a')
                 new_char = chr((ord(char) - base + shift) % 26 + base)
+                result.append(new_char)
+                key_index += 1
+            elif char.isdigit():
+                shift = digit_shift if encrypt else -digit_shift
+                new_char = chr((ord(char) - ord('0') + shift) % 10 + ord('0'))
                 result.append(new_char)
                 key_index += 1
             else:

@@ -9,12 +9,11 @@ from .modern.des_cipher import DESCipher
 from .modern.triple_des_cipher import TripleDESCipher
 from .modern.blowfish_cipher import BlowfishCipher
 from .modern.chacha20_cipher import ChaCha20Cipher
-
-
 from .modern.twofish_cipher import TwofishCipher
 from .modern.rsa_cipher import RSACipher
 from .modern.elgamal_cipher import ElGamalCipher
 from .modern.ecc_cipher import ECCCipher
+
 
 class CipherFactory:
     ALGORITHM_MAP = {
@@ -34,38 +33,32 @@ class CipherFactory:
         "ECC": ECCCipher,
     }
 
-    BANK_MAP = {
-        "BANCO_UNION": "CAESAR",
-        "BANCO_MERCANTIL": "ATBASH",
-        "BANCO_BISA": "VIGENERE",
-        "BANCO_FORTALEZA": "PLAYFAIR",
-        "BANCO_GANADERO": "HILL",
-        "BANCO_NACIONAL": "AES",
-        "BANCO_ECONOMICO": "DES",
-        "BANCO_SOL": "3DES",
-        "BANCO_CREDITO": "BLOWFISH",
-        "BANCO_PRODEM": "CHACHA20",
-        "BANCO_FASSIL": "TWOFISH",
-        "BANCO_DIEZ": "RSA",
-        "BANCO_ONCE": "ELGAMAL",
-        "BANCO_DOCE": "ECC",
-    }
-
     @classmethod
-    def get_cipher(cls, algorithm_name: str):
+    def get_cipher(cls, algorithm_name: str, key_material: dict | None = None):
         algorithm_name = algorithm_name.upper()
+        key_material = key_material or {}
 
         if algorithm_name not in cls.ALGORITHM_MAP:
             raise ValueError(f"Algoritmo no soportado: {algorithm_name}")
 
-        return cls.ALGORITHM_MAP[algorithm_name]()
+        if algorithm_name == "CAESAR":
+            return CaesarCipher(shift=key_material.get("shift", 3))
 
-    @classmethod
-    def get_cipher_by_bank(cls, bank_name: str):
-        bank_name = bank_name.upper()
+        if algorithm_name == "ATBASH":
+            return AtbashCipher()
 
-        if bank_name not in cls.BANK_MAP:
-            raise ValueError(f"Banco no configurado: {bank_name}")
+        if algorithm_name == "VIGENERE":
+            return VigenereCipher(key=key_material.get("key", "CLAVE"))
 
-        algorithm_name = cls.BANK_MAP[bank_name]
-        return cls.get_cipher(algorithm_name)
+        if algorithm_name == "PLAYFAIR":
+            return PlayfairCipher(key=key_material.get("key", "SEGURIDAD"))
+
+        if algorithm_name == "HILL":
+            return HillCipher(key_matrix=key_material.get("key_matrix"))
+
+        cipher_cls = cls.ALGORITHM_MAP[algorithm_name]
+
+        try:
+            return cipher_cls(**key_material)
+        except TypeError:
+            return cipher_cls()

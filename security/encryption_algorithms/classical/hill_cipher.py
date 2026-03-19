@@ -2,6 +2,14 @@ from security.encryption_algorithms.base_cipher import BaseCipher
 
 
 class HillCipher(BaseCipher):
+    """
+    Versión reversible para datos arbitrarios:
+    1. Convierte el texto a bytes UTF-8
+    2. Convierte hex -> letras A-P
+    3. Aplica Hill 2x2 sobre letras A-Z
+    4. Descifra y revierte A-P -> hex -> texto original
+    """
+
     def __init__(self, key_matrix=None):
         self.mod = 26
         self.key_matrix = key_matrix or [[3, 3], [2, 5]]
@@ -41,17 +49,19 @@ class HillCipher(BaseCipher):
             for i in range(2)
         ]
 
-    def _normalize_text(self, text: str) -> str:
-        text = ''.join([c.upper() for c in text if c.isalpha()])
-        if len(text) % 2 != 0:
-            text += 'X'
-        return text
+    def _text_to_ap(self, data: str) -> str:
+        hex_text = data.encode("utf-8").hex().upper()
+        return ''.join(chr(ord('A') + int(ch, 16)) for ch in hex_text)
+
+    def _ap_to_text(self, encoded: str) -> str:
+        hex_text = ''.join(format(ord(ch) - ord('A'), 'X') for ch in encoded)
+        return bytes.fromhex(hex_text).decode("utf-8")
 
     def _text_to_numbers(self, text: str):
         return [ord(c) - ord('A') for c in text]
 
     def _numbers_to_text(self, numbers):
-        return ''.join(chr(n % 26 + ord('A')) for n in numbers)
+        return ''.join(chr((n % 26) + ord('A')) for n in numbers)
 
     def _multiply_block(self, matrix, block):
         return [
@@ -60,7 +70,10 @@ class HillCipher(BaseCipher):
         ]
 
     def encrypt(self, data: str) -> str:
-        text = self._normalize_text(data)
+        text = self._text_to_ap(str(data))
+        if len(text) % 2 != 0:
+            raise ValueError("La codificación interna debe tener longitud par.")
+
         numbers = self._text_to_numbers(text)
         result = []
 
@@ -71,7 +84,10 @@ class HillCipher(BaseCipher):
         return self._numbers_to_text(result)
 
     def decrypt(self, data: str) -> str:
-        text = self._normalize_text(data)
+        text = str(data).upper()
+        if len(text) % 2 != 0:
+            raise ValueError("El texto cifrado Hill debe tener longitud par.")
+
         numbers = self._text_to_numbers(text)
         result = []
 
@@ -79,4 +95,5 @@ class HillCipher(BaseCipher):
             block = numbers[i:i + 2]
             result.extend(self._multiply_block(self.inverse_matrix, block))
 
-        return self._numbers_to_text(result)
+        decoded_letters = self._numbers_to_text(result)
+        return self._ap_to_text(decoded_letters)

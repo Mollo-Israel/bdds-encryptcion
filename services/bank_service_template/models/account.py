@@ -1,41 +1,70 @@
 from datetime import datetime
+from decimal import Decimal
 
-from pydantic import BaseModel
-from sqlalchemy import BigInteger, Column, DateTime, Integer, String
+from pydantic import BaseModel, ConfigDict
+from sqlalchemy import (
+    BigInteger,
+    Column,
+    DateTime,
+    Index,
+    Integer,
+    Numeric,
+    String,
+    Text,
+    UniqueConstraint,
+)
 
 from database.connection import Base
 
 
-# ORM — tabla en la BD del banco
 class AccountORM(Base):
     __tablename__ = "cuentas"
+    __table_args__ = (
+        UniqueConstraint("banco_id", "numero_cuenta", name="uq_cuentas_banco_numero"),
+        Index("idx_cuentas_ci", "ci"),
+        Index("idx_cuentas_banco_id", "banco_id"),
+        Index("idx_cuentas_numero_cuenta", "numero_cuenta"),
+        Index("idx_cuentas_fecha_conversion", "fecha_conversion"),
+    )
 
-    cuenta_id = Column(BigInteger, primary_key=True, index=True)
+    cuenta_id = Column(BigInteger, primary_key=True, autoincrement=False)
     banco_id = Column(Integer, nullable=False)
-    saldo_usd_cifrado = Column(String(512), nullable=False)   # saldo cifrado
-    saldo_bs = Column(String(512), nullable=True)             # saldo convertido (cifrado)
-    fecha_conversion = Column(DateTime, nullable=True)
+    ci = Column(String(64), nullable=False)
+    nombre = Column(String(150), nullable=False)
+    apellido = Column(String(150), nullable=False)
+    numero_cuenta = Column(String(128), nullable=False)
+    saldo_usd_encrypted = Column(Text, nullable=False)
+    saldo_bs = Column(Numeric(18, 4), nullable=True)
     codigo_verificacion = Column(String(8), nullable=True)
+    fecha_conversion = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(
+        DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+    )
 
 
-# Pydantic — respuesta al exponer cuenta cifrada
 class AccountResponse(BaseModel):
     cuenta_id: int
     banco_id: int
-    saldo_usd_cifrado: str
+    ci: str
+    nombre: str
+    apellido: str
+    numero_cuenta: str
+    saldo_usd_encrypted: str
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(from_attributes=True)
 
 
-# Pydantic — body para actualizar saldo convertido
 class AccountUpdateRequest(BaseModel):
     cuenta_id: int
-    saldo_bs: str
+    saldo_bs: Decimal
     fecha_conversion: datetime
     codigo_verificacion: str
 
 
-# Pydantic — confirmación de actualización
 class AccountUpdateResponse(BaseModel):
     cuenta_id: int
     status: str

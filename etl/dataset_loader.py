@@ -2,6 +2,8 @@ import csv
 from validators import (
     clean_record,
     validate_required_fields,
+    validate_account_id,
+    parse_account_id,
     validate_balance,
     validate_bank,
     parse_balance,
@@ -23,6 +25,7 @@ REPORT_FILE = "etl/etl_report.txt"
 
 def validate_expected_columns(fieldnames):
     expected = {
+        "Nro",
         "Identificacion",
         "Nombres",
         "Apellidos",
@@ -41,6 +44,7 @@ def validate_expected_columns(fieldnames):
 
 def reject_record(rejected_rows, raw_row, reason):
     rejected_rows.append({
+        "Nro": raw_row.get("Nro", ""),
         "Identificacion": raw_row.get("Identificacion", ""),
         "Nombres": raw_row.get("Nombres", ""),
         "Apellidos": raw_row.get("Apellidos", ""),
@@ -58,6 +62,7 @@ def main():
 
     # Filtro 1
     removed_null_required = 0
+    removed_invalid_account_id = 0
     removed_invalid_balance = 0
     removed_invalid_bank = 0
     duplicate_records = 0
@@ -88,6 +93,12 @@ def main():
                 removed_records += 1
                 removed_null_required += 1
                 reject_record(rejected_rows, raw_row, "Campos obligatorios vacíos")
+                continue
+
+            if not validate_account_id(record["cuenta_id"]):
+                removed_records += 1
+                removed_invalid_account_id += 1
+                reject_record(rejected_rows, raw_row, "cuenta_id inválido")
                 continue
 
             if not validate_balance(record["saldo_usd"]):
@@ -127,6 +138,7 @@ def main():
                 continue
 
             # Convertir tipos después de validar
+            record["cuenta_id"] = parse_account_id(record["cuenta_id"])
             record["banco_id"] = parse_bank_id(record["banco_id"])
             record["saldo_usd"] = parse_balance(record["saldo_usd"])
 
@@ -160,6 +172,7 @@ def main():
     # Guardar dataset limpio
     with open(OUTPUT_FILE, "w", newline="", encoding="utf-8") as csvfile:
         fieldnames = [
+            "cuenta_id",
             "ci",
             "nombre",
             "apellido",
@@ -174,6 +187,7 @@ def main():
     # Guardar rechazados
     with open(REJECTED_FILE, "w", newline="", encoding="utf-8") as csvfile:
         fieldnames = [
+            "Nro",
             "Identificacion",
             "Nombres",
             "Apellidos",
@@ -185,6 +199,12 @@ def main():
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rejected_rows)
+
+    # Distribución por banco para el reporte
+    bank_distribution = {}
+    for record in clean_data:
+        bank_id = record["banco_id"]
+        bank_distribution[bank_id] = bank_distribution.get(bank_id, 0) + 1
 
     # Guardar reporte
     with open(REPORT_FILE, "w", encoding="utf-8") as f:
@@ -198,6 +218,7 @@ def main():
         f.write("FILTRO 1: VALIDACIÓN OBLIGATORIA\n")
         f.write("-" * 60 + "\n")
         f.write(f"Campos obligatorios vacíos: {removed_null_required}\n")
+        f.write(f"cuenta_id inválido: {removed_invalid_account_id}\n")
         f.write(f"Saldo inválido: {removed_invalid_balance}\n")
         f.write(f"Banco inválido: {removed_invalid_bank}\n")
         f.write("\n")
@@ -214,6 +235,12 @@ def main():
         f.write(f"Inconsistencias de identidad: {identity_inconsistency_records}\n")
         f.write("\n")
 
+        f.write("DISTRIBUCIÓN FINAL POR BANCO\n")
+        f.write("-" * 60 + "\n")
+        for bank_id in sorted(bank_distribution.keys()):
+            f.write(f"Banco {bank_id}: {bank_distribution[bank_id]} registros\n")
+        f.write("\n")
+
         f.write("ARCHIVOS GENERADOS\n")
         f.write("-" * 60 + "\n")
         f.write(f"- {OUTPUT_FILE}\n")
@@ -223,12 +250,12 @@ def main():
 
         f.write("COLUMNAS DEL DATASET LIMPIO\n")
         f.write("-" * 60 + "\n")
-        f.write("ci,nombre,apellido,numero_cuenta,banco_id,saldo_usd\n")
+        f.write("cuenta_id,ci,nombre,apellido,numero_cuenta,banco_id,saldo_usd\n")
         f.write("\n")
 
         f.write("REGLAS APLICADAS\n")
         f.write("-" * 60 + "\n")
-        f.write("- Se eliminó la columna Nro por no ser relevante para el dominio bancario.\n")
+        f.write("- Se reutiliza la columna Nro como cuenta_id para integración con los microservicios bancarios.\n")
         f.write("- Nombres y apellidos normalizados a mayúsculas.\n")
         f.write("- Filtro 1 elimina registros con problemas estructurales u obligatorios.\n")
         f.write("- Filtro 2 valida formato de CI y número de cuenta con reglas ajustadas al dataset.\n")
