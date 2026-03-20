@@ -85,8 +85,8 @@ BANK_REGISTRY = {
     },
     13: {
         "name": "Banco de Desarrollo Productivo S.A.M.",
-        "engine": "cassandra",
-        "database": "banco_desarrollo_productivo",
+        "engine": "neo4j",
+        "database": "neo4j",
         "api_port": 8013,
         "algorithm": "ECC",
     },

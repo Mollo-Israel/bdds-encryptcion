@@ -1,8 +1,8 @@
 REPORTE ETL
 ============================================================
 Total registros originales: 123790
-Registros válidos: 123790
-Registros rechazados totales: 0
+Registros válidos: 123785
+Registros rechazados totales: 5
 
 FILTRO 1: VALIDACIÓN OBLIGATORIA
 ------------------------------------------------------------
@@ -18,13 +18,13 @@ Número de cuenta inválido por formato/longitud: 0
 
 REGLAS DE CONSISTENCIA
 ------------------------------------------------------------
-Duplicados detectados: 0
-Inconsistencias de identidad: 0
+Duplicados detectados: 1
+Inconsistencias de identidad: 4
 
 DISTRIBUCIÓN FINAL POR BANCO
 ------------------------------------------------------------
-Banco 1: 8722 registros
-Banco 2: 8831 registros
+Banco 1: 8721 registros
+Banco 2: 8828 registros
 Banco 3: 8767 registros
 Banco 4: 8885 registros
 Banco 5: 8785 registros
@@ -35,7 +35,7 @@ Banco 9: 8817 registros
 Banco 10: 8779 registros
 Banco 11: 8910 registros
 Banco 12: 8982 registros
-Banco 13: 8902 registros
+Banco 13: 8901 registros
 Banco 14: 8868 registros
 
 ARCHIVOS GENERADOS

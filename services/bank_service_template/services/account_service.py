@@ -35,9 +35,7 @@ def get_all_accounts(db, limit: int | None = None, offset: int = 0) -> list[dict
         return list(cursor)
 
     if DB_ENGINE == "cassandra":
-        # Cassandra no soporta OFFSET de forma nativa.
-        # Para no romper lo actual, se mantiene compatibilidad
-        # y se hace slicing en memoria.
+        # Cassandra no soporta OFFSET nativo; se hace slicing en memoria.
         rows = db.execute("""
             SELECT cuenta_id, banco_id, ci, nombre, apellido, numero_cuenta, saldo_usd_encrypted
             FROM cuentas
@@ -51,6 +49,25 @@ def get_all_accounts(db, limit: int | None = None, offset: int = 0) -> list[dict
             rows_list = rows_list[:limit]
 
         return list(rows_list)
+
+    if DB_ENGINE == "neo4j":
+        # Modelo de grafos: (Cliente)-[:TIENE_CUENTA]->(Cuenta)
+        cypher = """
+            MATCH (cl:Cliente)-[:TIENE_CUENTA]->(ct:Cuenta {banco_id: $banco_id})
+            RETURN ct.cuenta_id AS cuenta_id, ct.banco_id AS banco_id,
+                   cl.ci AS ci, cl.nombre AS nombre, cl.apellido AS apellido,
+                   ct.numero_cuenta AS numero_cuenta,
+                   ct.saldo_usd_encrypted AS saldo_usd_encrypted
+            ORDER BY ct.cuenta_id
+            SKIP $offset
+        """
+        params: dict = {"banco_id": BANK_ID, "offset": offset}
+        if limit is not None:
+            cypher += " LIMIT $limit"
+            params["limit"] = limit
+
+        result = db.run(cypher, **params)
+        return [dict(record) for record in result]
 
     query = db.query(AccountORM).order_by(AccountORM.cuenta_id)
 
@@ -142,6 +159,43 @@ def load_accounts(db, accounts_data: list[dict]) -> int:
 
         return inserted
 
+    if DB_ENGINE == "neo4j":
+        for item in accounts_data:
+            cuenta_id = int(item["cuenta_id"])
+
+            existing = db.run(
+                "MATCH (ct:Cuenta {cuenta_id: $cuenta_id}) RETURN ct.cuenta_id",
+                cuenta_id=cuenta_id,
+            ).single()
+
+            if existing:
+                continue
+
+            db.run("""
+                MERGE (cl:Cliente {ci: $ci})
+                ON CREATE SET cl.nombre = $nombre, cl.apellido = $apellido
+                WITH cl
+                CREATE (ct:Cuenta {
+                    cuenta_id: $cuenta_id,
+                    banco_id: $banco_id,
+                    numero_cuenta: $numero_cuenta,
+                    saldo_usd_encrypted: $saldo_usd_encrypted,
+                    created_at: datetime()
+                })
+                CREATE (cl)-[:TIENE_CUENTA]->(ct)
+            """,
+                ci=encryption_service.encrypt(str(item["ci"])),
+                nombre=str(item["nombre"]),
+                apellido=str(item["apellido"]),
+                cuenta_id=cuenta_id,
+                banco_id=BANK_ID,
+                numero_cuenta=encryption_service.encrypt(str(item["numero_cuenta"])),
+                saldo_usd_encrypted=encryption_service.encrypt(str(item["saldo_usd"])),
+            )
+            inserted += 1
+
+        return inserted
+
     for item in accounts_data:
         cuenta_id = int(item["cuenta_id"])
 
@@ -220,6 +274,29 @@ def update_account(db, payload: AccountUpdateRequest):
         return SimpleNamespace(
             cuenta_id=payload.cuenta_id,
             codigo_verificacion=payload.codigo_verificacion,
+        )
+
+    if DB_ENGINE == "neo4j":
+        result = db.run("""
+            MATCH (ct:Cuenta {cuenta_id: $cuenta_id})
+            SET ct.saldo_bs = $saldo_bs,
+                ct.fecha_conversion = $fecha_conversion,
+                ct.codigo_verificacion = $codigo_verificacion,
+                ct.updated_at = datetime()
+            RETURN ct.cuenta_id AS cuenta_id, ct.codigo_verificacion AS codigo_verificacion
+        """,
+            cuenta_id=payload.cuenta_id,
+            saldo_bs=float(payload.saldo_bs),
+            fecha_conversion=payload.fecha_conversion.isoformat(),
+            codigo_verificacion=payload.codigo_verificacion,
+        ).single()
+
+        if not result:
+            return None
+
+        return SimpleNamespace(
+            cuenta_id=result["cuenta_id"],
+            codigo_verificacion=result["codigo_verificacion"],
         )
 
     account = db.query(AccountORM).filter(AccountORM.cuenta_id == payload.cuenta_id).first()

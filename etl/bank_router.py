@@ -23,7 +23,7 @@ BANK_ENDPOINTS = {
     10: os.getenv("BANK_10_URL", "http://127.0.0.1:8010/accounts/load"),
     11: os.getenv("BANK_11_URL", "http://127.0.0.1:8011/accounts/load"),
     12: os.getenv("BANK_12_URL", "http://127.0.0.1:8012/accounts/load"),
-    13: os.getenv("BANK_13_URL", "http://127.0.0.1:8113/accounts/load"),
+    13: os.getenv("BANK_13_URL", "http://127.0.0.1:8013/accounts/load"),
     14: os.getenv("BANK_14_URL", "http://127.0.0.1:8014/accounts/load"),
 }
 

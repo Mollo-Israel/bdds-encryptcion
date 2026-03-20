@@ -1,1 +1,6 @@
 Nro,Identificacion,Nombres,Apellidos,NroCuenta,IdBanco,Saldo,motivo_rechazo
+10,2869928457,Soila,Comadreja,2972809067647670,1,259970.1398,Inconsistencia de identidad por CI
+11,2869928457,Soila,Comadreja,5722981029519570,2,25558.6427,Inconsistencia de identidad por CI
+12,2869928457,Soila,Comadreja,4843761268108660,2,493652.2852,Inconsistencia de identidad por CI
+15,1468733396,Aquiles,Castre Denuevo,7238406397734400,13,47095.2587,Inconsistencia de identidad por CI
+18,4683559426,Ana,Conda,8254996963637880,2,312015.6296,Duplicado por banco_id + numero_cuenta

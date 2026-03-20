@@ -8,6 +8,8 @@ from cassandra import ConsistencyLevel
 from cassandra.cluster import Cluster, ExecutionProfile, EXEC_PROFILE_DEFAULT
 from cassandra.query import dict_factory
 
+from neo4j import GraphDatabase
+
 from config import DB_URL, DB_ENGINE
 
 Base = declarative_base()
@@ -18,6 +20,7 @@ mongo_client = None
 mongo_db = None
 cassandra_cluster = None
 cassandra_session = None
+neo4j_driver = None
 
 if DB_ENGINE == "mongodb":
     parsed = urlparse(DB_URL)
@@ -47,6 +50,14 @@ elif DB_ENGINE == "cassandra":
 
     cassandra_session = cassandra_cluster.connect(keyspace)
 
+elif DB_ENGINE == "neo4j":
+    # URL esperada: neo4j://neo4j:admin123@localhost:7687
+    parsed = urlparse(DB_URL)
+    neo4j_uri = f"neo4j://{parsed.hostname}:{parsed.port or 7687}"
+    neo4j_user = parsed.username or "neo4j"
+    neo4j_password = parsed.password or "admin123"
+    neo4j_driver = GraphDatabase.driver(neo4j_uri, auth=(neo4j_user, neo4j_password))
+
 else:
     connect_args = {"check_same_thread": False} if "sqlite" in DB_URL else {}
     engine = create_engine(DB_URL, connect_args=connect_args)
@@ -58,6 +69,12 @@ def get_db():
         yield mongo_db
     elif DB_ENGINE == "cassandra":
         yield cassandra_session
+    elif DB_ENGINE == "neo4j":
+        session = neo4j_driver.session(database="neo4j")
+        try:
+            yield session
+        finally:
+            session.close()
     else:
         db = SessionLocal()
         try:
@@ -92,6 +109,18 @@ def init_db():
                 updated_at timestamp
             )
         """)
+
+    elif DB_ENGINE == "neo4j":
+        # Modelo de grafos: (Cliente)-[:TIENE_CUENTA]->(Cuenta)
+        with neo4j_driver.session(database="neo4j") as session:
+            session.run(
+                "CREATE CONSTRAINT cuenta_id_unique IF NOT EXISTS "
+                "FOR (c:Cuenta) REQUIRE c.cuenta_id IS UNIQUE"
+            )
+            session.run(
+                "CREATE CONSTRAINT cliente_ci_unique IF NOT EXISTS "
+                "FOR (cl:Cliente) REQUIRE cl.ci IS UNIQUE"
+            )
 
     else:
         from models.account import AccountORM  # noqa: F401

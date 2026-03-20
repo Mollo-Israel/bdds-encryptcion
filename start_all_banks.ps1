@@ -17,7 +17,7 @@ $banks = @(
     @{Id="10"; Name="Banco Fortaleza S.A.";                  Algorithm="AES";       Engine="mongodb";    DbUrl="mongodb://admin:admin123@localhost:27017/banco_fortaleza?authSource=admin"; Port="8010"},
     @{Id="11"; Name="Banco FIE S.A.";                        Algorithm="RSA";       Engine="mongodb";    DbUrl="mongodb://admin:admin123@localhost:27017/banco_fie?authSource=admin"; Port="8011"},
     @{Id="12"; Name="Banco PYME de la Comunidad S.A.";       Algorithm="ELGAMAL";   Engine="cassandra";  DbUrl="cassandra://localhost:9042/banco_pyme_comunidad"; Port="8012"},
-    @{Id="13"; Name="Banco de Desarrollo Productivo S.A.M."; Algorithm="ECC";       Engine="cassandra";  DbUrl="cassandra://localhost:9042/banco_desarrollo_productivo"; Port="8113"},
+    @{Id="13"; Name="Banco de Desarrollo Productivo S.A.M."; Algorithm="ECC";       Engine="neo4j";      DbUrl="neo4j://neo4j:admin123@localhost:7687"; Port="8013"},
     @{Id="14"; Name="Banco de la Nacion Argentina";          Algorithm="CHACHA20";  Engine="cassandra";  DbUrl="cassandra://localhost:9042/banco_nacion_argentina"; Port="8014"}
 )
 

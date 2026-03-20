@@ -25,6 +25,7 @@ services:
       - "5433:5432"
     volumes:
       - postgres_asfi_data:/var/lib/postgresql/data
+      - ./init/asfi-init.sql:/docker-entrypoint-initdb.d/asfi-init.sql
     networks:
       - bdds_net
 
@@ -78,6 +79,20 @@ services:
     networks:
       - bdds_net
 
+  # Banco 13: Banco de Desarrollo Productivo - base orientada a grafos
+  neo4j_banks:
+    image: neo4j:5
+    container_name: neo4j_banks
+    environment:
+      NEO4J_AUTH: neo4j/admin123
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j_banks_data:/data
+    networks:
+      - bdds_net
+
 volumes:
   postgres_banks_data:
   postgres_asfi_data:
@@ -85,6 +100,7 @@ volumes:
   sqlserver_banks_data:
   mongo_banks_data:
   cassandra_banks_data:
+  neo4j_banks_data:
 
 networks:
   bdds_net:
