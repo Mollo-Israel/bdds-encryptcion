@@ -1,8 +1,34 @@
+import hashlib
+import os
+
 from Crypto.PublicKey import ElGamal
 from Crypto import Random
 from Crypto.Util.number import bytes_to_long, long_to_bytes, inverse
+
 from ..base_cipher import BaseCipher
 from ..utils import b64encode_bytes, b64decode_str
+
+
+def _seeded_randfunc(seed: str):
+    """
+    Genera bytes pseudo-aleatorios deterministas a partir de `seed`.
+    SHA-256 en modo contador: mismo seed → mismo p,g,x,y ElGamal
+    en cualquier proceso, sin importar el momento del arranque.
+    """
+    seed_bytes = hashlib.sha256(seed.encode("utf-8")).digest()
+    counter = [0]
+
+    def randfunc(n: int) -> bytes:
+        result = b""
+        while len(result) < n:
+            block = hashlib.sha256(
+                seed_bytes + counter[0].to_bytes(8, "big")
+            ).digest()
+            result += block
+            counter[0] += 1
+        return result[:n]
+
+    return randfunc
 
 
 class ElGamalCipher(BaseCipher):
@@ -10,8 +36,9 @@ class ElGamalCipher(BaseCipher):
     Implementación académica de ElGamal sobre enteros.
     """
 
-    def __init__(self, key_size: int = 256):
-        self.key = ElGamal.generate(key_size, Random.new().read)
+    def __init__(self, seed: str | None = None, key_size: int = 256):
+        randfunc = _seeded_randfunc(seed) if seed else Random.new().read
+        self.key = ElGamal.generate(key_size, randfunc)
         self.public_key = self.key.publickey()
 
         # Convertir a int puro para evitar problemas con IntegerCustom

@@ -4,3 +4,9 @@ Nro,Identificacion,Nombres,Apellidos,NroCuenta,IdBanco,Saldo,motivo_rechazo
 12,2869928457,Soila,Comadreja,4843761268108660,2,493652.2852,Inconsistencia de identidad por CI
 15,1468733396,Aquiles,Castre Denuevo,7238406397734400,13,47095.2587,Inconsistencia de identidad por CI
 18,4683559426,Ana,Conda,8254996963637880,2,312015.6296,Duplicado por banco_id + numero_cuenta
+25,6204560448,Jorge Maria,Vargas Vargas,2879030831273810,9,-0.0001,Saldo inválido
+26,6204560448,Jorge Maria,Vargas Vargas,7722624704509880,9,-100000,Saldo inválido
+69964,6257497052,Lucia Jorge Maria,Claros,18033675263285,,10316.8487,Campos obligatorios vacíos
+84587,5879647335,Ana Sofia Ricardo,Mendoza,99276331748,12,3678.5699,Duplicado por banco_id + numero_cuenta
+101685,1280128,Maria Jose Luis,Mamani Choque,3769956857945600,3,251721.5595,Inconsistencia de identidad por CI
+113044,,Luis Elena Ana,Flores Rodriguez,9256996693458240,2,421881.6252,Campos obligatorios vacíos

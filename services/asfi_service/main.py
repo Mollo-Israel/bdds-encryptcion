@@ -13,6 +13,9 @@ Los saldos convertidos NO se escriben de vuelta en las bases de los bancos.
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from decimal import Decimal
+import json
+import time
+from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from sqlalchemy import text
@@ -29,6 +32,29 @@ from rate_client import fetch_current_rate            # tipo de cambio
 from verification_service import generate_verification_code
 
 app = FastAPI(title=SERVICE_NAME)
+
+# ---------------------------------------------------------------------------
+# Timing log
+# ---------------------------------------------------------------------------
+
+_TIMING_LOG = Path(__file__).resolve().parents[2] / "audit" / "asfi_timing.log"
+
+
+def _log_timing(operacion: str, banco_id: int | None, duracion_s: float, cuentas: int | None = None) -> None:
+    """Escribe una línea JSON en el log de tiempos de operación ASFI."""
+    try:
+        _TIMING_LOG.parent.mkdir(parents=True, exist_ok=True)
+        entry = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "operacion": operacion,
+            "banco_id": banco_id,
+            "duracion_s": round(duracion_s, 4),
+            "cuentas": cuentas,
+        }
+        with _TIMING_LOG.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
 
 
 # ---------------------------------------------------------------------------
@@ -70,21 +96,27 @@ def _process_bank(bank_row: dict, db: Session) -> dict:
       lectura → descifrado → tipo de cambio → conversión → persistencia ASFI
     """
     banco_id = int(bank_row["banco_id"])
+    t_banco_inicio = time.perf_counter()
 
     # 1. Lectura paralela: obtiene cuentas cifradas del banco
+    t0 = time.perf_counter()
     encrypted_accounts = fetch_bank_accounts(bank_row["endpoint_api"], limit=None)
+    _log_timing("FETCH_BANCO", banco_id, time.perf_counter() - t0, len(encrypted_accounts))
 
     # 2. Descifrado
+    t0 = time.perf_counter()
     decrypted_accounts = [
         decrypt_account_payload(banco_id, account)
         for account in encrypted_accounts
     ]
+    _log_timing("DESCIFRADO", banco_id, time.perf_counter() - t0, len(decrypted_accounts))
 
     # 3. Tipo de cambio (una sola consulta BCB por banco para coherencia)
     tipo_cambio = Decimal(str(fetch_current_rate()))
     fecha_conversion = datetime.utcnow()
 
     # 4. Conversión + 5. Persistencia exclusiva en ASFI
+    t0 = time.perf_counter()
     synced_count = 0
     for account in decrypted_accounts:
         codigo_verificacion = generate_verification_code()
@@ -124,6 +156,8 @@ def _process_bank(bank_row: dict, db: Session) -> dict:
         synced_count += 1
 
     db.commit()
+    _log_timing("PERSISTENCIA_ASFI", banco_id, time.perf_counter() - t0, synced_count)
+    _log_timing("BANCO_TOTAL", banco_id, time.perf_counter() - t_banco_inicio, synced_count)
 
     return {
         "banco_id": banco_id,
@@ -412,6 +446,7 @@ def sweep_all_banks(db: Session = Depends(get_db)):
 
     bank_rows = [dict(r) for r in banks]
 
+    t_sweep_inicio = time.perf_counter()
     results: list[dict] = []
     with ThreadPoolExecutor(max_workers=len(bank_rows)) as executor:
         futures = {executor.submit(_process_bank_safe, row): row["banco_id"] for row in bank_rows}
@@ -422,6 +457,7 @@ def sweep_all_banks(db: Session = Depends(get_db)):
 
     total_synced = sum(r.get("total_sincronizadas", 0) for r in results)
     total_errors = sum(1 for r in results if "error" in r)
+    _log_timing("SWEEP_TOTAL", None, time.perf_counter() - t_sweep_inicio, total_synced)
 
     return {
         "total_bancos": len(results),
