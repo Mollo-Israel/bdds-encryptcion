@@ -1,11 +1,26 @@
 Nro,Identificacion,Nombres,Apellidos,NroCuenta,IdBanco,Saldo,motivo_rechazo
+9,2869928457,Jorge,Rodriguez,5790132893651860,1,301716.8517,Inconsistencia de identidad por CI
 10,2869928457,Soila,Comadreja,2972809067647670,1,259970.1398,Inconsistencia de identidad por CI
 11,2869928457,Soila,Comadreja,5722981029519570,2,25558.6427,Inconsistencia de identidad por CI
 12,2869928457,Soila,Comadreja,4843761268108660,2,493652.2852,Inconsistencia de identidad por CI
+13,1468733396,Aquiles,Castro,5136272276760680,4,6439.2724,Inconsistencia de identidad por CI
+14,1468733396,Aquiles,Castro,1027887220913980,4,469.4852,Inconsistencia de identidad por CI
 15,1468733396,Aquiles,Castre Denuevo,7238406397734400,13,47095.2587,Inconsistencia de identidad por CI
+17,4683559426,Ana,Conda,8254996963637880,2,167556.6308,Duplicado por banco_id + numero_cuenta
 18,4683559426,Ana,Conda,8254996963637880,2,312015.6296,Duplicado por banco_id + numero_cuenta
-25,6204560448,Jorge Maria,Vargas Vargas,2879030831273810,9,-0.0001,Saldo inválido
-26,6204560448,Jorge Maria,Vargas Vargas,7722624704509880,9,-100000,Saldo inválido
+25,6204560448,Jorge Maria,Vargas Vargas,2879030831273810,9,-0.0001,Saldo inválido o negativo
+26,6204560448,Jorge Maria,Vargas Vargas,7722624704509880,9,-100000,Saldo inválido o negativo
+13567,74772163,Leonardo ,DiCaprio,7850255463697870,13,64420.2975,Nombre o Apellido con espacios irregulares
+13568,74772163,Leonardo ,DiCaprio,6787659344722090,13,277294.15,Nombre o Apellido con espacios irregulares
+13569,74772163,Leonardo ,DiCaprio,6329780849118840,13,63523.7152,Nombre o Apellido con espacios irregulares
+14464,77385534,Emma ,Stone,5170831095633330,4,257899.9021,Nombre o Apellido con espacios irregulares
+14465,77385534,Emma ,Stone,6518754626482080,4,385056.1058,Nombre o Apellido con espacios irregulares
+14466,77385534,Emma ,Stone,5737821041956880,4,285102.1761,Nombre o Apellido con espacios irregulares
+16396,5052631172,Maria Elena Diego,Rodriguez Garcia,99276331748,12,371912.011,Duplicado por banco_id + numero_cuenta
+21402,94378261,Bonny ,Lovy,4290943516018220,9,240880.2031,Nombre o Apellido con espacios irregulares
+21403,94378261,Bonny ,Lovy,6100574945302830,7,234271.8934,Nombre o Apellido con espacios irregulares
+21404,94378261,Bonny ,Lovy,6915659133492540,6,207202.6615,Nombre o Apellido con espacios irregulares
+28133,1280128,Carlos Ricardo Carlos,Garcia Rodriguez,620203814711076,5,2414.2311,Inconsistencia de identidad por CI
 69964,6257497052,Lucia Jorge Maria,Claros,18033675263285,,10316.8487,Campos obligatorios vacíos
 84587,5879647335,Ana Sofia Ricardo,Mendoza,99276331748,12,3678.5699,Duplicado por banco_id + numero_cuenta
 101685,1280128,Maria Jose Luis,Mamani Choque,3769956857945600,3,251721.5595,Inconsistencia de identidad por CI

@@ -1,5 +1,3 @@
-import re
-
 VALID_BANK_IDS = set(range(1, 15))
 
 # Reglas configurables para el filtro 2
@@ -133,6 +131,17 @@ def build_identity_key(record: dict):
 # =========================
 # FILTRO 2: FORMATO
 # =========================
+
+def has_irregular_spacing(value) -> bool:
+    """
+    Detecta espacios irregulares en el valor ORIGINAL (antes de normalizar):
+    - espacios al inicio o al final
+    - doble espacio interno
+    """
+    if value is None:
+        return False
+    s = str(value)
+    return s != s.strip() or "  " in s
 
 def validate_ci_format(ci: str) -> bool:
     """

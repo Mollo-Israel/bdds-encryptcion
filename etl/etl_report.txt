@@ -1,41 +1,46 @@
 REPORTE ETL
 ============================================================
 Total registros originales: 123790
-Registros válidos: 123779
-Registros rechazados totales: 11
+Registros válidos: 123764
+Registros rechazados totales: 26
 
 FILTRO 1: VALIDACIÓN OBLIGATORIA
 ------------------------------------------------------------
 Campos obligatorios vacíos: 2
 cuenta_id inválido: 0
-Saldo inválido: 2
+Saldo inválido o negativo: 2
 Banco inválido: 0
 
 FILTRO 2: VALIDACIÓN DE FORMATO
 ------------------------------------------------------------
 CI inválido por formato/longitud: 0
 Número de cuenta inválido por formato/longitud: 0
+Nombre o Apellido con espacios irregulares: 9
 
-REGLAS DE CONSISTENCIA
+REGLAS DE CONSISTENCIA (dos pasadas — se rechaza todo el grupo)
 ------------------------------------------------------------
-Duplicados detectados: 2
-Inconsistencias de identidad: 5
+Inconsistencias de identidad por CI: 9
+Duplicados por banco_id + numero_cuenta: 4
+
+ANOMALÍAS DETECTADAS (registros aceptados pero sospechosos)
+------------------------------------------------------------
+Saldo igual a 0.0: 2
 
 DISTRIBUCIÓN FINAL POR BANCO
 ------------------------------------------------------------
-Banco 1: 8720 registros
-Banco 2: 8827 registros
+Banco 1: 8719 registros
+Banco 2: 8826 registros
 Banco 3: 8766 registros
-Banco 4: 8885 registros
-Banco 5: 8785 registros
-Banco 6: 8793 registros
-Banco 7: 8872 registros
+Banco 4: 8880 registros
+Banco 5: 8784 registros
+Banco 6: 8792 registros
+Banco 7: 8871 registros
 Banco 8: 8877 registros
-Banco 9: 8815 registros
+Banco 9: 8814 registros
 Banco 10: 8779 registros
 Banco 11: 8910 registros
-Banco 12: 8981 registros
-Banco 13: 8901 registros
+Banco 12: 8980 registros
+Banco 13: 8898 registros
 Banco 14: 8868 registros
 
 ARCHIVOS GENERADOS
@@ -44,15 +49,14 @@ ARCHIVOS GENERADOS
 - etl/rejected_records.csv
 - etl/etl_report.txt
 
-COLUMNAS DEL DATASET LIMPIO
-------------------------------------------------------------
-cuenta_id,ci,nombre,apellido,numero_cuenta,banco_id,saldo_usd
-
 REGLAS APLICADAS
 ------------------------------------------------------------
 - Se reutiliza la columna Nro como cuenta_id para integración con los microservicios bancarios.
 - Nombres y apellidos normalizados a mayúsculas.
 - Filtro 1 elimina registros con problemas estructurales u obligatorios.
-- Filtro 2 valida formato de CI y número de cuenta con reglas ajustadas al dataset.
+- Filtro 2 valida formato de CI, número de cuenta y espacios en nombres.
+- Consistencia en dos pasadas: se rechaza TODA la familia de registros conflictivos.
 - Duplicado lógico: banco_id + numero_cuenta.
 - Inconsistencia de identidad: mismo CI con distinto nombre o apellido.
+- Saldo negativo: rechazado en filtro 1 (validate_balance).
+- Saldo 0.0: aceptado pero contabilizado como anomalía en el reporte.

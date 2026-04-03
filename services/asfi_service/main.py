@@ -40,7 +40,7 @@ app = FastAPI(title=SERVICE_NAME)
 _TIMING_LOG = Path(__file__).resolve().parents[2] / "audit" / "asfi_timing.log"
 
 
-def _log_timing(operacion: str, banco_id: int | None, duracion_s: float, cuentas: int | None = None) -> None:
+def _log_timing(operacion: str, banco_id: int | None, duracion_s: float, cuentas: int | None = None, **extra) -> None:
     """Escribe una línea JSON en el log de tiempos de operación ASFI."""
     try:
         _TIMING_LOG.parent.mkdir(parents=True, exist_ok=True)
@@ -51,6 +51,8 @@ def _log_timing(operacion: str, banco_id: int | None, duracion_s: float, cuentas
             "duracion_s": round(duracion_s, 4),
             "cuentas": cuentas,
         }
+        if extra:
+            entry.update(extra)
         with _TIMING_LOG.open("a", encoding="utf-8") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
     except Exception:
@@ -457,7 +459,14 @@ def sweep_all_banks(db: Session = Depends(get_db)):
 
     total_synced = sum(r.get("total_sincronizadas", 0) for r in results)
     total_errors = sum(1 for r in results if "error" in r)
-    _log_timing("SWEEP_TOTAL", None, time.perf_counter() - t_sweep_inicio, total_synced)
+    _log_timing(
+        "SWEEP_TOTAL",
+        None,
+        time.perf_counter() - t_sweep_inicio,
+        total_synced,
+        bancos_procesados=len(results),
+        bancos_con_error=total_errors,
+    )
 
     return {
         "total_bancos": len(results),
